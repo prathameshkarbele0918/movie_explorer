@@ -1,0 +1,2 @@
+Movie Explorer is a web application that allows users to search and explore movies using data from The Movie Database (TMDB) API. The application provides a clean, intuitive interface for discovering movies, viewing detailed information including cast, trailers, ratings, genres, and release dates. Users can search for movies by title, browse through paginated results, and view comprehensive movie details including top cast members and YouTube trailers. The application is built with React, TypeScript, and integrates with TMDB API v3 for movie data retrieval.
+
