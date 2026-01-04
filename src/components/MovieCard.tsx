@@ -1,6 +1,14 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Star } from "lucide-react";
-import type { Movie } from "@/lib/api";
+
+interface Movie {
+  id: number;
+  title: string;
+  release_date: string;
+  overview: string;
+  poster_url: string;
+  vote_average: number;
+}
 
 interface MovieCardProps {
   movie: Movie;
@@ -12,7 +20,7 @@ const MovieCard = ({ movie }: MovieCardProps) => {
     : "N/A";
 
   return (
-    <Link to={`/movie/${movie.id}`} className="group block">
+    <Link href={`/movie/${movie.id}`} className="group block">
       <div className="overflow-hidden rounded-lg bg-card border border-border transition-all duration-200 hover:border-primary/50 hover:shadow-lg">
         <div className="aspect-[2/3] overflow-hidden">
           <img

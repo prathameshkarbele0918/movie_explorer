@@ -1,3 +1,5 @@
+"use client";
+
 import { Play } from "lucide-react";
 import { useState } from "react";
 
@@ -42,7 +44,6 @@ const TrailerCard = ({ title, youtubeKey }: TrailerCardProps) => {
           alt={title}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           onError={(e) => {
-            // Fallback to a lower quality thumbnail if maxresdefault fails
             const target = e.target as HTMLImageElement;
             target.src = `https://img.youtube.com/vi/${youtubeKey}/hqdefault.jpg`;
           }}

@@ -16,3 +16,7 @@ const MovieCardSkeleton = () => {
 };
 
 export default MovieCardSkeleton;
+
+
+
+

@@ -1,8 +1,3 @@
-/**
- * Component Test - Error State
- * Tests the error state component that displays error messages to users
- */
-
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -52,4 +47,3 @@ describe('ErrorState Component', () => {
     expect(screen.getByText(/rate limit exceeded/i)).toBeInTheDocument();
   });
 });
-

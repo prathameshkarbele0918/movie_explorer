@@ -1,62 +1,33 @@
 # TMDB Movie Explorer
 
-A Movie Explorer application built with React, TypeScript, and Vite that integrates with The Movie Database (TMDB) API.
+A Movie Explorer application built with Next.js App Router, TypeScript, and server-side rendering that integrates with The Movie Database (TMDB) API.
 
-## 📋 Project Overview
+## Overview
 
-This application allows users to search for movies and view detailed information including cast, trailers, ratings, and more. The application demonstrates API integration, error handling, caching strategies, and production-ready patterns.
+This application allows users to search for movies and view detailed information including cast, trailers, ratings, and more. The application demonstrates Next.js App Router, server-side rendering, API integration, error handling, caching strategies, and production-ready patterns.
 
-## 🏗️ Architecture Notes
+## Features
 
-### Important: Framework Constraint
+- Movie search with pagination
+- Movie detail pages with cast, trailers, and metadata
+- Server-side rendering (SSR) for all data-driven pages
+- Route Handlers for TMDB API integration
+- Proper error handling including rate limit detection
+- Caching strategy for optimal performance
+- TypeScript throughout
+- Responsive design
 
-**⚠️ Important Note**: The assignment requirements specify Next.js App Router with server-side rendering and Route Handlers. However, this project uses **Vite + React** as the build system, which has different capabilities:
-
-- **Current Implementation**: Vite + React (Client-side rendering)
-- **Required for Full Compliance**: Next.js App Router with SSR
-
-### Current Architecture
-
-1. **API Layer** (`src/lib/tmdb.ts`, `src/lib/api.ts`):
-   - TMDB API client functions
-   - Normalized response transformations
-   - Error handling and rate limiting
-   - **Note**: In a Next.js implementation, these would be Route Handlers under `/app/api/*`
-
-2. **Pages**:
-   - `/` - Search and listing page with pagination
-   - `/movie/[id]` - Movie detail page
-
-3. **State Management**:
-   - React Query for server state management
-   - URL query parameters for search state persistence
-
-### Architecture Limitations
-
-Due to Vite's architecture (unlike Next.js), the following requirements are implemented differently:
-
-- **Server-Side Rendering**: Not available with Vite alone. Pages are client-rendered.
-- **API Route Handlers**: Implemented as service functions. In Next.js, these would be at `/app/api/movies/search`, `/app/api/movies/[id]`, and `/app/api/config`.
-- **Secret Management**: Currently using `VITE_TMDB_API_TOKEN` which is exposed to the client. In Next.js, this would be in `.env.local` and only accessible server-side.
-
-**For Production Next.js Implementation**: 
-- Move API functions to `/app/api/` Route Handlers
-- Use server components by default
-- Keep secrets in server-only environment variables
-
-## 🚀 Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js 18+ and npm
 - TMDB API Read Access Token (free): https://www.themoviedb.org/settings/api
 
-### Installation
+## Installation
 
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd movie-explorer-ui-06
+cd movie_explorer
 ```
 
 2. Install dependencies:
@@ -66,7 +37,7 @@ npm install
 
 3. Create `.env.local` file in the root directory:
 ```bash
-VITE_TMDB_API_TOKEN=your_tmdb_read_access_token_here
+TMDB_API_TOKEN=your_tmdb_read_access_token_here
 ```
 
 4. Start the development server:
@@ -74,9 +45,9 @@ VITE_TMDB_API_TOKEN=your_tmdb_read_access_token_here
 npm run dev
 ```
 
-5. Open your browser to `http://localhost:8080`
+5. Open your browser to `http://localhost:3000`
 
-## 🧪 Testing
+## Testing
 
 Run tests with:
 ```bash
@@ -97,8 +68,8 @@ npm run test:coverage
 
 The project includes:
 
-1. **API Layer Tests** (`src/lib/__tests__/api.test.ts`):
-   - Success cases for search and movie details
+1. **Route Handler Tests** (`src/app/api/movies/search/__tests__/route.test.ts`):
+   - Success cases for search
    - Error handling (429 rate limits, upstream errors)
    - Input validation
 
@@ -107,7 +78,7 @@ The project includes:
    - Retry functionality
    - User interactions
 
-## 📦 Caching Strategy
+## Caching Strategy
 
 The application implements multiple layers of caching:
 
@@ -120,41 +91,23 @@ The TMDB configuration endpoint (`/configuration`) is cached aggressively for 24
 - It's called frequently (needed for building image URLs)
 - Reduces API calls and improves performance
 
-**Implementation**:
-```typescript
-let configCache: { data: TMDBConfiguration; timestamp: number } | null = null;
-const CONFIG_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-```
+**Implementation**: In-memory cache with 24-hour duration
 
-**Why 24 hours?**
-- TMDB configuration changes infrequently
-- Balancing freshness with performance
-- Reduces unnecessary API requests
+### 2. Next.js Route Handler Caching
 
-### 2. React Query Cache (60 seconds)
+**Location**: Route Handlers in `src/app/api/*`
 
-**Location**: Page components using `useQuery`
-
-Search results and movie details are cached for 60 seconds using React Query:
-- `staleTime: 60000` - Data is considered fresh for 60 seconds
-- `gcTime: 300000` - Unused data is garbage collected after 5 minutes
+Search and movie details use Next.js caching:
+- `revalidate: 60` - Data is revalidated every 60 seconds
+- `Cache-Control` headers set appropriately
+- Configuration endpoint cached for 24 hours
 
 **Why 60 seconds?**
 - Search results may change (new movies added, ratings updated)
 - 60 seconds provides a good balance between freshness and performance
 - Users can get updated results without excessive API calls
 
-**Cache Invalidation**:
-- Manual refetch on retry after errors
-- Automatic refetch when query parameters change
-
-### 3. Browser HTTP Cache
-
-The browser's native HTTP cache also caches responses based on:
-- Cache-Control headers from TMDB API
-- Browser default caching behavior
-
-## ⚠️ Rate Limiting & Error Handling
+## Rate Limiting & Error Handling
 
 ### Rate Limit Detection (429)
 
@@ -178,14 +131,14 @@ The application detects and handles HTTP 429 (Too Many Requests) responses:
 3. **Network Errors**: Shows generic error with retry option
 4. **API Errors**: Shows error message from API
 
-## 🌐 API Endpoints
+## API Endpoints
 
 ### Internal API Contract
 
-The application exposes the following API functions (Route Handler equivalents):
+The application exposes the following Route Handlers:
 
 #### 1. Search Movies
-```typescript
+```
 GET /api/movies/search?q=<string>&page=<number>
 ```
 
@@ -213,7 +166,7 @@ GET /api/movies/search?q=<string>&page=<number>
 ```
 
 #### 2. Movie Details
-```typescript
+```
 GET /api/movies/{id}
 ```
 
@@ -227,18 +180,18 @@ GET /api/movies/{id}
 - Poster and backdrop URLs
 
 #### 3. Configuration
-```typescript
+```
 GET /api/config
 ```
 
 **Response**: Image configuration for building image URLs
 
-## 📄 Pages
+## Pages
 
 ### Search and List Page (`/`)
 
 **Features**:
-- Server-rendered data (via React Query)
+- Server-rendered data
 - Reads from URL query parameters: `/?q=batman&page=1`
 - Pagination support
 - Loading state with skeletons
@@ -258,14 +211,14 @@ GET /api/config
   - Top 5 cast members
   - YouTube trailers (embedded)
 
-## 🚢 Deployment
+## Deployment
 
 ### Environment Variables
 
 Before deployment, ensure the following environment variable is set:
 
 ```bash
-VITE_TMDB_API_TOKEN=your_tmdb_read_access_token_here
+TMDB_API_TOKEN=your_tmdb_read_access_token_here
 ```
 
 ### Build for Production
@@ -274,7 +227,7 @@ VITE_TMDB_API_TOKEN=your_tmdb_read_access_token_here
 npm run build
 ```
 
-This creates an optimized production build in the `dist` directory.
+This creates an optimized production build.
 
 ### Deployment Platforms
 
@@ -288,83 +241,70 @@ The application can be deployed to:
 2. **Netlify**:
    - Connect GitHub repository
    - Build command: `npm run build`
-   - Publish directory: `dist`
+   - Publish directory: `.next`
    - Add environment variable in Netlify dashboard
-
-3. **Any Static Host**:
-   - Build the project: `npm run build`
-   - Deploy the `dist` directory to your hosting provider
-   - Ensure environment variables are configured
 
 ### Production Considerations
 
-**Important**: When deploying a Vite app (not Next.js):
-- Environment variables prefixed with `VITE_` are exposed to the client
-- For true secret management, use a backend proxy or migrate to Next.js
-- Consider using a backend-for-frontend (BFF) pattern for API calls
+- Environment variables are server-only (not exposed to client)
+- All TMDB API calls are made server-side
+- Proper caching headers set for optimal performance
 
-## 🔧 Development
+## Build and Quality Gate
 
-### Project Structure
+The following must pass:
+
+- `npm run build` - Production build
+- `npm run start` - Production server
+- `npm run lint` - Linting
+- `npm run typecheck` - TypeScript type checking
+
+## Project Structure
 
 ```
 src/
-├── components/          # React components
-│   ├── ui/             # shadcn/ui components
-│   └── __tests__/      # Component tests
-├── lib/                # Utility functions and API clients
-│   ├── api.ts         # API layer (Route Handler equivalents)
-│   ├── tmdb.ts        # TMDB API client
-│   └── __tests__/     # API tests
-├── pages/             # Page components
-├── test/              # Test setup
-└── ...
+├── app/                    # Next.js App Router
+│   ├── api/               # Route Handlers
+│   │   ├── movies/       # Movie API endpoints
+│   │   └── config/       # Configuration endpoint
+│   ├── movie/[id]/       # Movie detail page
+│   ├── layout.tsx        # Root layout
+│   ├── page.tsx          # Search page
+│   └── globals.css       # Global styles
+├── components/           # React components
+│   ├── ui/              # UI components (button, input, skeleton)
+│   └── __tests__/       # Component tests
+├── lib/                 # Utility functions and API clients
+│   ├── tmdb.ts         # TMDB API client
+│   └── utils.ts        # Utility functions
+└── test/               # Test setup
 ```
 
-### Available Scripts
+## Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
-- `npm run preview` - Preview production build
+- `npm run start` - Start production server
 - `npm test` - Run tests
 - `npm run test:ui` - Run tests with UI
 - `npm run lint` - Run linter
+- `npm run typecheck` - Type check TypeScript
 
-## 📝 Notes on Assignment Requirements
+## Technologies
 
-This implementation addresses the assignment requirements with the following considerations:
-
-✅ **Implemented**:
-- TMDB API integration
-- Movie search and detail pages
-- Error handling (including 429 rate limits)
-- Caching strategy (documented above)
-- Tests (API and component tests)
-- Query parameter support for search
-- Pagination
-- Loading, empty, and error states
-- TypeScript throughout
-
-⚠️ **Architecture Differences**:
-- Uses Vite instead of Next.js (assignment requires Next.js)
-- Client-side rendering instead of SSR
-- API functions instead of Route Handlers (same functionality, different location)
-- Environment variables exposed to client (would be server-only in Next.js)
-
-For full compliance with assignment requirements, the codebase should be migrated to Next.js App Router.
-
-## 📚 Technologies
-
-- **React 18** - UI library
+- **Next.js 14** - React framework with App Router
 - **TypeScript** - Type safety
-- **Vite** - Build tool and dev server
-- **React Router** - Client-side routing
-- **React Query** - Server state management
+- **React 18** - UI library
 - **Tailwind CSS** - Styling
-- **shadcn/ui** - UI components
 - **Vitest** - Testing framework
 - **TMDB API** - Movie data source
 
-## 📄 License
+## Security
+
+- TMDB API token is stored in `.env.local` and never exposed to the client
+- All TMDB API calls are made server-side via Route Handlers
+- No secrets in client-side code or browser network requests
+
+## License
 
 This project is for educational purposes.
